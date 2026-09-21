@@ -19,7 +19,7 @@
     return e;
   }
 
-  const fmt = (x, d = 2) => (x == null || Number.isNaN(x) || (typeof x === 'number' && !isFinite(x))) ? (x === Infinity ? '∞' : '—') : (+x).toFixed(d);
+  const fmt = (x, d = 2) => (x == null || Number.isNaN(x) || (typeof x === 'number' && !isFinite(x))) ? (x === Infinity ? '∞' : '—') : CT.dec((+x).toFixed(d));
   const fmtG = (x, d = 3) => (x == null || Number.isNaN(x)) ? '—' : (!isFinite(x) ? '∞' : CT.fmtNum(x, d));
 
   // ---- storage (per viewer, best effort)
@@ -39,7 +39,7 @@
     const unit = o.unit ? el('span', { class: 'ctl-unit', text: o.unit }) : null;
     const root = el('div', { class: 'ctl ctl-slider' }, el('div', { class: 'ctl-row' }, lab, el('span', { class: 'ctl-readout' }, out, unit)), input);
     const digits = o.digits ?? (log ? 3 : (String(o.step).split('.')[1] || '').length);
-    const show = () => { const v = fromUi(+input.value); out.value = o.fmt ? o.fmt(v) : (log ? CT.fmtNum(v, digits) : v.toFixed(digits)); };
+    const show = () => { const v = fromUi(+input.value); out.value = o.fmt ? o.fmt(v) : (log ? CT.fmtNum(v, digits) : CT.dec(v.toFixed(digits))); };
     show();
     input.addEventListener('input', () => { show(); if (o.onInput) o.onInput(fromUi(+input.value)); });
     return {
@@ -89,7 +89,7 @@
     const formulaEl = el('div', { class: 'tex-block plant-formula' });
     const tagEl = el('p', { class: 'ctl-hint plant-tag' });
     const sel = select({
-      id: o.id + '-plant', label: o.label || 'Plant', value: def.id,
+      id: o.id + '-plant', label: o.label || 'Planta', value: def.id,
       options: plants.map(p => ({ value: p.id, label: p.name })),
       onChange: v => { def = CT.plantById[v]; params = CT.plantDefaults(def); rebuild(); fire(); },
     });
@@ -166,7 +166,7 @@
         const ok = i === q.answer;
         [...opts.children].forEach((c, j) => { c.classList.toggle('is-right', j === q.answer); c.classList.toggle('is-wrong', j === i && !ok); c.disabled = true; });
         fb.hidden = false; fb.className = 'quiz-fb ' + (ok ? 'ok' : 'nope');
-        fb.innerHTML = (ok ? '<strong>Correct.</strong> ' : '<strong>Not quite.</strong> ') + q.explain;
+        fb.innerHTML = (ok ? '<strong>Correto.</strong> ' : '<strong>Não é isso.</strong> ') + q.explain;
         renderMath(fb);
         const d = store.get('quiz', {}); d[q.id] = ok; store.set('quiz', d);
         document.dispatchEvent(new CustomEvent('ctw:progress'));
@@ -174,7 +174,7 @@
       opts.append(b);
     });
     root.append(opts, fb);
-    if (done[q.id] === true) root.append(el('p', { class: 'quiz-done', text: '✓ answered correctly before' }));
+    if (done[q.id] === true) root.append(el('p', { class: 'quiz-done', text: '✓ respondida corretamente em outra ocasião' }));
     renderMath(root);
     container.append(root);
     return root;
@@ -222,8 +222,12 @@
   /* Coalesce many slider events into one recompute per frame. */
   function frame(fn) { let pending = false; return (...args) => { if (pending) return; pending = true; requestAnimationFrame(() => { pending = false; fn(...args); }); }; }
 
+  /* Coeficientes separados por espaço ou ponto e vírgula; vírgula ou ponto como decimal.
+     Uma lista só com vírgulas e sem espaços ("1,3,2") é tratada como separada por vírgulas. */
   function parsePoly(s) {
-    const parts = String(s).replace(/[\[\]]/g, '').split(/[,\s]+/).filter(Boolean).map(Number);
+    let str = String(s).replace(/[\[\]]/g, '').trim();
+    const commaList = !/[;\s]/.test(str) && (str.match(/,/g) || []).length >= 2;
+    const parts = (commaList ? str.split(',') : str.split(/[;\s]+/)).filter(Boolean).map(t => Number(t.replace(',', '.')));
     if (!parts.length || parts.some(v => Number.isNaN(v))) return null;
     return parts;
   }

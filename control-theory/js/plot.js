@@ -28,22 +28,22 @@
   function fmtTick(v, step) {
     if (Math.abs(v) < 1e-12) return '0';
     const dec = Math.max(0, Math.min(6, -Math.floor(Math.log10(step) + 1e-9)));
-    if (Math.abs(v) >= 1e5) return v.toExponential(1);
-    return v.toFixed(dec);
+    if (Math.abs(v) >= 1e5) return CT.dec(v.toExponential(1));
+    return CT.dec(v.toFixed(dec));
   }
   function fmtLog(v) {
     const k = Math.round(Math.log10(v));
-    if (Math.abs(Math.log10(v) - k) < 1e-9) return k >= -3 && k <= 5 ? String(Math.pow(10, k)) : `1e${k}`;
+    if (Math.abs(Math.log10(v) - k) < 1e-9) return k >= -3 && k <= 5 ? CT.dec(Math.pow(10, k)) : `1e${k}`;
     return CT.fmtNum(v, 2);
   }
   function fmtVal(v) {
     if (v === null || v === undefined || Number.isNaN(v)) return '—';
     const a = Math.abs(v);
     if (a === 0) return '0';
-    if (a >= 1000) return v.toFixed(0);
-    if (a >= 10) return v.toFixed(2);
-    if (a >= 0.01) return v.toFixed(3);
-    return v.toExponential(2);
+    if (a >= 1000) return CT.dec(v.toFixed(0));
+    if (a >= 10) return CT.dec(v.toFixed(2));
+    if (a >= 0.01) return CT.dec(v.toFixed(3));
+    return CT.dec(v.toExponential(2));
   }
   function bsearch(x, v) {
     let lo = 0, hi = x.length - 1;
@@ -71,7 +71,7 @@
       this.legendEl = document.createElement('div'); this.legendEl.className = 'plot-legend';
       head.append(this.titleEl, this.legendEl);
       if (this.opts.table) {
-        const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'plot-table-btn'; btn.textContent = 'Table';
+        const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'plot-table-btn'; btn.textContent = 'Tabela';
         btn.setAttribute('aria-expanded', 'false');
         btn.addEventListener('click', () => { this.tableOpen = !this.tableOpen; btn.setAttribute('aria-expanded', String(this.tableOpen)); this.tableEl.hidden = !this.tableOpen; if (this.tableOpen) this.renderTable(); });
         head.append(btn);
@@ -118,11 +118,11 @@
     renderTable() {
       const T = this.tableEl; T.textContent = '';
       const series = this.data.series.filter(s => s.x && s.x.length);
-      if (!series.length) { T.textContent = 'No data yet.'; return; }
+      if (!series.length) { T.textContent = 'Ainda sem dados.'; return; }
       const table = document.createElement('table');
       const thead = document.createElement('thead'), trh = document.createElement('tr');
       const th0 = document.createElement('th'); th0.textContent = this.opts.xLabel || 'x'; trh.append(th0);
-      series.forEach((s, i) => { const th = document.createElement('th'); th.textContent = s.name || `series ${i + 1}`; trh.append(th); });
+      series.forEach((s, i) => { const th = document.createElement('th'); th.textContent = s.name || `série ${i + 1}`; trh.append(th); });
       thead.append(trh); table.append(thead);
       const tbody = document.createElement('tbody');
       const base = series[0].x;
@@ -139,7 +139,7 @@
       }
       table.append(tbody);
       const note = document.createElement('p'); note.className = 'plot-table-note';
-      note.textContent = `${rows} of ${base.length} samples shown, evenly spaced.`;
+      note.textContent = `${rows} de ${base.length} amostras exibidas, igualmente espaçadas.`;
       T.append(table, note);
     }
     // ---- scales
@@ -370,7 +370,7 @@
       const tip = this.tip; tip.textContent = '';
       const tk = this.tk;
       if (pointHit) {
-        const h = document.createElement('div'); h.className = 'tip-x'; h.textContent = pointHit.name || 'point';
+        const h = document.createElement('div'); h.className = 'tip-x'; h.textContent = pointHit.name || 'ponto';
         const v = document.createElement('div'); v.className = 'tip-row';
         const val = document.createElement('strong'); val.textContent = pointHit.label || `${fmtVal(pointHit.x)}, ${fmtVal(pointHit.y)}`;
         v.append(val); tip.append(h, v);

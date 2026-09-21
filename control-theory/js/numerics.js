@@ -5,6 +5,8 @@ window.CT = window.CT || {};
 (function (CT) {
   'use strict';
   const EPS = 1e-12;
+  /* Vírgula decimal em toda saída formatada. */
+  const dec = s => String(s).replace('.', ',');
 
   // ---------------------------------------------------------------- complex
   const C = {
@@ -23,8 +25,8 @@ window.CT = window.CT || {};
     isReal: (a, tol = 1e-7) => Math.abs(a.im) <= tol * Math.max(1, Math.abs(a.re)),
     fmt(a, d = 3) {
       const re = +a.re.toFixed(d), im = +a.im.toFixed(d);
-      if (Math.abs(im) < Math.pow(10, -d)) return `${re}`;
-      return `${re} ${im < 0 ? '−' : '+'} ${Math.abs(im)}j`;
+      if (Math.abs(im) < Math.pow(10, -d)) return dec(re);
+      return `${dec(re)} ${im < 0 ? '−' : '+'} ${dec(Math.abs(im))}j`;
     },
   };
 
@@ -123,8 +125,8 @@ window.CT = window.CT || {};
   function fmtNum(x, d = 3) {
     if (!isFinite(x)) return String(x);
     const ax = Math.abs(x);
-    if (ax !== 0 && (ax < 1e-3 || ax >= 1e6)) return x.toExponential(2);
-    return String(+x.toPrecision(Math.max(1, d)));
+    if (ax !== 0 && (ax < 1e-3 || ax >= 1e6)) return dec(x.toExponential(2));
+    return dec(+x.toPrecision(Math.max(1, d)));
   }
 
   // ------------------------------------------------------ transfer functions
@@ -248,7 +250,7 @@ window.CT = window.CT || {};
     return { re, im, w };
   }
 
-  /* Peak of |S(jω)| = 1/|1+L| — a compact robustness number. */
+  /* Pico de |S(jω)| = 1/|1+L|: um número compacto para a tolerância a erro de modelo. */
   function sensitivityPeak(L, wmin, wmax, n = 600) {
     let Ms = 0, wMs = wmin;
     const lw0 = Math.log10(wmin), lw1 = Math.log10(wmax);
@@ -290,11 +292,11 @@ window.CT = window.CT || {};
     const p = P.trim(coeffs);
     const n = p.length - 1;
     const notes = [];
-    if (n < 1) return { rows: [[p[0]]], powers: [0], rhp: 0, notes: ['Constant polynomial: nothing to test.'], valid: false };
+    if (n < 1) return { rows: [[p[0]]], powers: [0], rhp: 0, notes: ['Polinômio constante: não há o que testar.'], valid: false };
     const negFirst = p[0] < 0;
     const q = negFirst ? p.map(c => -c) : p;
-    if (negFirst) notes.push('Leading coefficient was negative: the whole polynomial was multiplied by −1 (same roots).');
-    if (q.some(c => c <= 0)) notes.push('Necessary condition already fails: a coefficient is zero or negative, so at least one root is not in the open left half-plane.');
+    if (negFirst) notes.push('O coeficiente principal era negativo: o polinômio inteiro foi multiplicado por −1 (mesmas raízes).');
+    if (q.some(c => c <= 0)) notes.push('A condição necessária já falha: há coeficiente nulo ou negativo, portanto pelo menos uma raiz está fora do semiplano esquerdo aberto.');
     const width = Math.ceil((n + 1) / 2);
     const r0 = [], r1 = [];
     for (let i = 0; i < q.length; i += 2) r0.push(q[i]);
@@ -310,13 +312,13 @@ window.CT = window.CT || {};
         const deg = n - (k - 2);
         prev1 = prev2.map((c, j) => c * (deg - 2 * j));
         rows[k - 1] = prev1;
-        notes.push(`Row s^${deg - 1} was entirely zero: it was replaced by the derivative of the auxiliary polynomial A(s) formed from row s^${deg}. A(s) has roots placed symmetrically about the origin (a pair on the jω axis, or mirrored real roots).`);
+        notes.push(`A linha s^${deg - 1} era inteiramente nula: foi substituída pela derivada do polinômio auxiliar A(s) formado na linha s^${deg}. A(s) tem raízes simétricas em relação à origem (um par sobre o eixo jω, ou raízes reais espelhadas).`);
       }
       let pivot = prev1[0];
       if (Math.abs(pivot) < 1e-12) {
         pivot = 1e-9;
         prev1[0] = pivot;
-        notes.push(`A zero appeared in the first column of row s^${n - (k - 1)}: replaced by a small positive ε (taken as +10⁻⁹) to continue the table.`);
+        notes.push(`Surgiu um zero na primeira coluna da linha s^${n - (k - 1)}: substituído por um ε positivo pequeno (adotado +10⁻⁹) para continuar a tabela.`);
       }
       const row = [];
       for (let j = 0; j < width; j++) {
@@ -336,5 +338,5 @@ window.CT = window.CT || {};
 
   CT.C = C; CT.P = P; CT.TF = TF;
   CT.bode = bode; CT.margins = margins; CT.nyquist = nyquist; CT.sensitivityPeak = sensitivityPeak;
-  CT.rootLocus = rootLocus; CT.routh = routh; CT.fmtNum = fmtNum;
+  CT.rootLocus = rootLocus; CT.routh = routh; CT.fmtNum = fmtNum; CT.dec = dec;
 })(window.CT);
