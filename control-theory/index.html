@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Control Loop Workshop</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/portal.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.js"></script>
+</head>
+<body>
+<div class="shell">
+<aside class="side">
+  <div class="brand">
+    <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect x="2" y="2" width="28" height="28" rx="6" fill="none" stroke="currentColor" stroke-width="2"/><polyline points="6,22 10,22 13,9 17,26 20,14 23,20 26,20" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>
+    <div><div class="brand-name">Control Loop Workshop</div><div class="brand-sub">interactive control theory</div></div>
+  </div>
+  <div class="path-title">Learning path</div>
+  <ul class="nav" id="nav"></ul>
+  <div class="progress"><span id="progress-text">0 of 0 checks done</span><div class="progress-bar"><span id="progress-fill"></span></div></div>
+</aside>
+
+<main class="main" id="main">
+
+<!-- ============================================================ HOME -->
+<section class="module is-active" id="m-home" data-module="home" data-title="Start here" data-short="Start">
+  <div class="home-hero">
+    <div>
+      <div class="eyebrow">Workshop</div>
+      <h1>From a differential equation to a tuned PID loop, with every step you can touch.</h1>
+      <p class="lede">Ten modules, each with the theory in a few paragraphs and a lab where the simulation runs in your browser. Drag poles, turn gains, break loops, and see the plots change immediately.</p>
+      <p>The audience is an engineer who has seen the equations before and wants them to become intuition: control and automation people, embedded and robotics developers, process engineers who tune loops on a PLC. Everything is in deviation variables around an operating point, the way a real loop works.</p>
+      <div class="callout"><div class="t">How the labs work</div>Sliders re-simulate on every move (RK4 on the plant, a sampled controller with dead time and saturation, exactly what a PLC or MCU would do). Every plot has a crosshair readout and a <em>Table</em> view. Quiz answers and challenge badges are remembered in this browser only.</div>
+    </div>
+    <figure>
+      <svg viewBox="0 0 560 210" role="img" aria-label="A feedback loop: reference minus measured output gives the error, the controller turns it into the control signal, the plant produces the output; disturbance enters at the plant input and noise at the sensor.">
+        <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+        <g fill="none" stroke="currentColor" stroke-width="1.5">
+          <line x1="10" y1="80" x2="62" y2="80" marker-end="url(#arr)"/>
+          <circle cx="76" cy="80" r="13"/>
+          <line x1="89" y1="80" x2="140" y2="80" marker-end="url(#arr)"/>
+          <rect x="142" y="58" width="110" height="44" rx="4"/>
+          <line x1="252" y1="80" x2="300" y2="80" marker-end="url(#arr)"/>
+          <circle cx="314" cy="80" r="13"/>
+          <line x1="327" y1="80" x2="360" y2="80" marker-end="url(#arr)"/>
+          <rect x="362" y="58" width="90" height="44" rx="4"/>
+          <line x1="452" y1="80" x2="510" y2="80" marker-end="url(#arr)"/>
+          <line x1="314" y1="24" x2="314" y2="66" marker-end="url(#arr)"/>
+          <circle cx="482" cy="80" r="3" fill="currentColor"/>
+          <line x1="482" y1="80" x2="482" y2="150"/>
+          <rect x="426" y="132" width="90" height="36" rx="4"/>
+          <line x1="482" y1="196" x2="482" y2="170" marker-end="url(#arr)"/>
+        </g>
+        <g fill="none" stroke="var(--accent)" stroke-width="2">
+          <line x1="426" y1="150" x2="76" y2="150"/>
+          <line x1="76" y1="150" x2="76" y2="94" marker-end="url(#arr)"/>
+        </g>
+        <g fill="currentColor" font-size="12" font-family="IBM Plex Sans, system-ui, sans-serif">
+          <text x="14" y="72">r (setpoint)</text>
+          <text x="70" y="84" font-size="13">Σ</text>
+          <text x="98" y="72">e = r − y</text>
+          <text x="60" y="103" font-size="11">−</text>
+          <text x="197" y="76" text-anchor="middle" font-weight="600">Controller</text>
+          <text x="197" y="93" text-anchor="middle" font-size="11">C(s)</text>
+          <text x="262" y="72">u</text>
+          <text x="308" y="84" font-size="13">Σ</text>
+          <text x="320" y="20" text-anchor="middle">d (disturbance)</text>
+          <text x="407" y="76" text-anchor="middle" font-weight="600">Plant</text>
+          <text x="407" y="93" text-anchor="middle" font-size="11">G(s)</text>
+          <text x="494" y="72">y</text>
+          <text x="471" y="154" font-size="11">sensor</text>
+          <text x="488" y="200" font-size="11">n (noise)</text>
+          <text x="250" y="145" text-anchor="middle" font-size="11" fill="var(--accent)">measured output, fed back</text>
+        </g>
+      </svg>
+      <figcaption>The loop every module comes back to. The controller only ever sees the error; the plant only ever sees the control signal plus whatever disturbs it.</figcaption>
+    </figure>
+  </div>
+
+  <h2>The path</h2>
+  <p class="prose">The order is deliberate. Modeling gives you something to control; Laplace gives you the language; transfer functions and feedback give you the structure; PID is the controller you will actually deploy; tuning, frequency response and root locus are three ways to choose its gains; digital implementation is where it runs; the challenges check whether it stuck.</p>
+  <div class="module-cards" id="module-cards"></div>
+
+  <h2>Reading that pairs well with this</h2>
+  <ul class="ref-list prose">
+    <li>Åström &amp; Murray, <em>Feedback Systems</em> (free PDF from the authors): the clearest modern treatment of S, T and the limits of feedback.</li>
+    <li>Åström &amp; Hägglund, <em>Advanced PID Control</em>: everything practical about PID, including relay auto-tuning and anti-windup.</li>
+    <li>Skogestad, “Simple analytic rules for model reduction and PID controller tuning” (J. Process Control, 2003): the SIMC rules used in the tuning bench.</li>
+    <li>Franklin, Powell &amp; Emami-Naeini, <em>Feedback Control of Dynamic Systems</em>: root locus and frequency-domain design done properly.</li>
+  </ul>
+</section>
+
+<!-- ============================================================ 1 MODELING -->
+<section class="module" id="m-modeling" data-module="modeling" data-title="Dynamic systems &amp; modeling" data-short="Modeling">
+  <div class="eyebrow">Module 1</div>
+  <h1>Dynamic systems and modeling</h1>
+  <p class="lede">A controller is designed against a model. The model does not need to be perfect, but you need to know which parts of it you trust: the gain, the dominant time constant, the delay.</p>
+
+  <div class="prose">
+    <h2>The recipe</h2>
+    <ol>
+      <li><strong>Pick the variables.</strong> Input <span class="tex">u</span> (what you can manipulate), output <span class="tex">y</span> (what you measure), and the states that store energy or mass.</li>
+      <li><strong>Write the balances.</strong> Newton for mechanics, Kirchhoff for circuits, energy and mass balances for thermal and process systems.</li>
+      <li><strong>Linearize around an operating point</strong> and work in deviation variables. A valve that is 40 % open at rest has <span class="tex">u = 0</span> at 40 % in the model.</li>
+      <li><strong>Take the Laplace transform</strong> with zero initial conditions to get a transfer function <span class="tex">G(s) = Y(s)/U(s)</span>.</li>
+      <li><strong>Validate against a step test.</strong> If the measured response disagrees, the model loses.</li>
+    </ol>
+
+    <h2>First order: one energy store</h2>
+    <p>A heated block of thermal capacitance <span class="tex">C</span> losing heat through a resistance <span class="tex">R</span> to the ambient, driven by heater power <span class="tex">P</span>:</p>
+    <div class="tex-block">C\,\frac{dT}{dt} = P - \frac{T - T_{amb}}{R} \quad\Longrightarrow\quad G(s) = \frac{T(s)}{P(s)} = \frac{K}{\tau s + 1},\qquad K = R,\ \ \tau = RC</div>
+    <p>An RC filter, a tank draining through a valve, a motor's speed under viscous friction: same equation, different constants. The step response is</p>
+    <div class="tex-block">y(t) = K\,u_0\left(1 - e^{-t/\tau}\right)</div>
+    <p>and the numbers to remember: 63.2 % of the final value at <span class="tex">t = \tau</span>, 98 % at <span class="tex">4\tau</span>, 2 % settling time <span class="tex">\approx 3.9\tau</span>. The tangent at <span class="tex">t = 0</span> reaches the final value at exactly <span class="tex">\tau</span>.</p>
+  </div>
+
+  <div class="lab" data-lab="first-order">
+    <div class="lab-head"><span class="lab-kicker">Lab 1.1</span><h3>First-order explorer</h3><p>Change the gain and the time constant. Watch where the 63 % point and the 4τ mark land, and where the single pole sits on the s-plane.</p></div>
+  </div>
+
+  <div class="prose">
+    <h2>Second order: two energy stores, and the damping ratio</h2>
+    <p>A mass on a spring with a damper, pushed by a force <span class="tex">F</span>:</p>
+    <div class="tex-block">m\ddot{x} + c\dot{x} + kx = F \quad\Longrightarrow\quad \frac{X(s)}{F(s)} = \frac{1/k \cdot \omega_n^2}{s^2 + 2\zeta\omega_n s + \omega_n^2},\qquad \omega_n = \sqrt{k/m},\ \ \zeta = \frac{c}{2\sqrt{km}}</div>
+    <figure>
+      <svg viewBox="0 0 420 120" role="img" aria-label="Mass–spring–damper: a mass attached to a wall by a spring and a damper in parallel, displaced by x under an applied force F.">
+        <defs><marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+        <g fill="none" stroke="currentColor" stroke-width="1.5">
+          <line x1="30" y1="15" x2="30" y2="105"/>
+          <g stroke-width="1"><line x1="22" y1="20" x2="30" y2="12"/><line x1="22" y1="35" x2="30" y2="27"/><line x1="22" y1="50" x2="30" y2="42"/><line x1="22" y1="65" x2="30" y2="57"/><line x1="22" y1="80" x2="30" y2="72"/><line x1="22" y1="95" x2="30" y2="87"/></g>
+          <polyline points="30,40 60,40 66,30 78,50 90,30 102,50 114,30 126,50 132,40 160,40"/>
+          <line x1="30" y1="80" x2="80" y2="80"/><rect x="80" y="70" width="40" height="20"/><line x1="98" y1="72" x2="98" y2="88" stroke-width="3"/><line x1="98" y1="80" x2="160" y2="80"/>
+          <rect x="160" y="30" width="90" height="60" rx="3" fill="var(--surface-2)"/>
+          <line x1="250" y1="60" x2="300" y2="60" marker-end="url(#arr2)"/>
+          <line x1="205" y1="100" x2="205" y2="112"/><line x1="205" y1="106" x2="265" y2="106" marker-end="url(#arr2)"/>
+        </g>
+        <g fill="currentColor" font-size="12" font-family="IBM Plex Sans, system-ui, sans-serif">
+          <text x="205" y="64" text-anchor="middle" font-weight="600">m</text>
+          <text x="95" y="26" text-anchor="middle">k</text>
+          <text x="100" y="105" text-anchor="middle">c</text>
+          <text x="278" y="54" text-anchor="middle">F</text>
+          <text x="240" y="118">x</text>
+        </g>
+      </svg>
+      <figcaption>Two energy stores (kinetic in the mass, potential in the spring) give a second-order equation; the damper decides whether the exchange between them rings.</figcaption>
+    </figure>
+    <p><span class="tex">\zeta</span> is the whole story of the shape: <span class="tex">\zeta &lt; 1</span> underdamped (oscillates), <span class="tex">\zeta = 1</span> critically damped, <span class="tex">\zeta &gt; 1</span> overdamped (two real poles, sluggish). For the underdamped step response the design numbers are</p>
+    <div class="tex-block">M_p = e^{-\pi\zeta/\sqrt{1-\zeta^2}},\qquad t_p = \frac{\pi}{\omega_n\sqrt{1-\zeta^2}},\qquad t_s(2\%) \approx \frac{4}{\zeta\omega_n},\qquad t_r \approx \frac{1.8}{\omega_n}</div>
+    <p>Overshoot depends on <span class="tex">\zeta</span> alone. <span class="tex">\zeta = 0.5</span> gives 16 %, <span class="tex">\zeta = 0.7</span> gives 4.6 %. That is why so many specifications end up asking for <span class="tex">\zeta \approx 0.7</span>.</p>
+  </div>
+
+  <div class="lab" data-lab="second-order">
+    <div class="lab-head"><span class="lab-kicker">Lab 1.2</span><h3>Second-order explorer</h3><p>Move ζ through the three regimes and watch the pole pair swing on the s-plane. The metrics beside the plot are measured from the simulated response, not from the formulas, so you can check the formulas against them.</p></div>
+  </div>
+
+  <div class="prose">
+    <h2>A coupled system: the DC motor</h2>
+    <p>Two balances that talk to each other. The electrical loop (armature inductance <span class="tex">L</span>, resistance <span class="tex">R</span>, back-EMF constant <span class="tex">K_e</span>) and the mechanical one (inertia <span class="tex">J</span>, viscous friction <span class="tex">b</span>, torque constant <span class="tex">K_t</span>):</p>
+    <div class="tex-block">L\frac{di}{dt} = V - Ri - K_e\,\omega,\qquad J\frac{d\omega}{dt} = K_t\, i - b\,\omega</div>
+    <p>In state-space form with <span class="tex">x = [\,i\ \ \omega\,]^T</span>, and as a transfer function from voltage to speed:</p>
+    <div class="tex-block">\frac{\Omega(s)}{V(s)} = \frac{K_t}{(Ls + R)(Js + b) + K_t K_e}</div>
+    <p>Second order, but with a fast electrical pole and a slow mechanical one. For a speed loop you can usually neglect <span class="tex">L</span> and get a first-order model; for a current loop you cannot. Which simplification is valid depends on the loop you are closing.</p>
+  </div>
+
+  <div class="lab" data-lab="motor">
+    <div class="lab-head"><span class="lab-kicker">Lab 1.3</span><h3>DC motor: from parameters to poles</h3><p>Apply a 1 V step. Speed and current are plotted separately (they have different units, so they get different axes, never one shared plot). Increase L and watch the current lag; increase J and watch the speed pole slow down.</p></div>
+  </div>
+
+  <div class="prose">
+    <h2>Dead time</h2>
+    <p>Transport delay (a conveyor, a pipe, a sensor that reports late) is <span class="tex">y(t) = u(t - L)</span>, which in the Laplace domain is a multiplication by <span class="tex">e^{-Ls}</span>. It is not a rational function, so it has no poles or zeros; what it has is phase that keeps growing with frequency. It is the single most limiting thing in a loop and gets its own treatment in the frequency-response module. When a rational approximation is needed, the first-order Padé form is <span class="tex">e^{-Ls} \approx \frac{1 - Ls/2}{1 + Ls/2}</span>.</p>
+    <h2>When you cannot derive it: measure it</h2>
+    <p>Most process loops never get a first-principles model. The workable alternative is a step test: put the loop in manual, step the output, record the response, and fit a first-order-plus-dead-time (FOPDT) model <span class="tex">K e^{-Ls}/(\tau s + 1)</span>. The tuning module does exactly that.</p>
+  </div>
+  <div class="quiz-block" data-quiz="modeling"><h3>Check yourself</h3></div>
+</section>
+
+<!-- ============================================================ 2 LAPLACE -->
+<section class="module" id="m-laplace" data-module="laplace" data-title="Laplace transforms" data-short="Laplace">
+  <div class="eyebrow">Module 2</div>
+  <h1>Laplace transforms</h1>
+  <p class="lede">The transform turns differential equations into algebra and turns “what does this system do over time” into “where are its poles”. Both directions matter.</p>
+  <div class="prose">
+    <h2>Definition and why it works</h2>
+    <div class="tex-block">F(s) = \mathcal{L}\{f(t)\} = \int_0^{\infty} f(t)\,e^{-st}\,dt,\qquad s = \sigma + j\omega</div>
+    <p>Differentiation in time becomes multiplication by <span class="tex">s</span>, convolution becomes a product. A linear ODE with constant coefficients becomes a polynomial equation, and the input-output relation with zero initial conditions becomes a ratio of polynomials: the transfer function.</p>
+    <div class="tex-block">\mathcal{L}\{\dot f\} = sF(s) - f(0),\qquad \mathcal{L}\{\ddot f\} = s^2F(s) - s f(0) - \dot f(0),\qquad \mathcal{L}\left\{\int_0^t f\right\} = \frac{F(s)}{s}</div>
+
+    <h2>The pairs you will actually use</h2>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>f(t), t ≥ 0</th><th>F(s)</th><th>Where it shows up</th></tr></thead>
+        <tbody>
+          <tr><td><span class="tex">\delta(t)</span></td><td><span class="tex">1</span></td><td>Impulse response = the transfer function itself</td></tr>
+          <tr><td><span class="tex">1</span> (unit step)</td><td><span class="tex">\dfrac{1}{s}</span></td><td>Setpoint change, load disturbance</td></tr>
+          <tr><td><span class="tex">t</span> (ramp)</td><td><span class="tex">\dfrac{1}{s^2}</span></td><td>Tracking a moving target</td></tr>
+          <tr><td><span class="tex">e^{-at}</span></td><td><span class="tex">\dfrac{1}{s+a}</span></td><td>Real pole at −a: one time constant 1/a</td></tr>
+          <tr><td><span class="tex">t\,e^{-at}</span></td><td><span class="tex">\dfrac{1}{(s+a)^2}</span></td><td>Repeated pole (critical damping)</td></tr>
+          <tr><td><span class="tex">\sin\omega t</span></td><td><span class="tex">\dfrac{\omega}{s^2+\omega^2}</span></td><td>Poles on the jω axis: sustained oscillation</td></tr>
+          <tr><td><span class="tex">\cos\omega t</span></td><td><span class="tex">\dfrac{s}{s^2+\omega^2}</span></td><td>Same poles, a zero at the origin</td></tr>
+          <tr><td><span class="tex">e^{-at}\sin\omega t</span></td><td><span class="tex">\dfrac{\omega}{(s+a)^2+\omega^2}</span></td><td>Complex pair −a ± jω: decaying oscillation</td></tr>
+          <tr><td><span class="tex">f(t-L)\,u(t-L)</span></td><td><span class="tex">e^{-Ls}F(s)</span></td><td>Dead time</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Two theorems you will use every week</h2>
+    <div class="tex-block">\text{Final value:}\ \lim_{t\to\infty} f(t) = \lim_{s\to 0} sF(s)\qquad\qquad \text{Initial value:}\ f(0^+) = \lim_{s\to\infty} sF(s)</div>
+    <p>The final-value theorem is how you compute steady-state error without simulating, but it is only valid when every pole of <span class="tex">sF(s)</span> is in the open left half-plane. Apply it to an oscillator and it will happily give you a number that means nothing.</p>
+
+    <h2>Poles are modes</h2>
+    <p>Partial fractions split any rational <span class="tex">Y(s)</span> into a sum of the table entries, so the time response is a sum of modes, one per pole:</p>
+    <ul>
+      <li>A real pole at <span class="tex">-a</span> contributes <span class="tex">e^{-at}</span>. Farther left is faster.</li>
+      <li>A complex pair <span class="tex">-\sigma \pm j\omega_d</span> contributes <span class="tex">e^{-\sigma t}\sin(\omega_d t + \phi)</span>. The real part sets the decay, the imaginary part the ringing frequency.</li>
+      <li>Any pole with a positive real part grows without bound: the system is unstable.</li>
+      <li>Zeros do not add modes. They change the weights of the modes: a left-half-plane zero near the origin adds overshoot, a right-half-plane zero produces the inverse response.</li>
+    </ul>
+    <p>Worked example. <span class="tex">Y(s) = \dfrac{1}{s(s+1)(s+2)} = \dfrac{A}{s} + \dfrac{B}{s+1} + \dfrac{C}{s+2}</span> with the cover-up rule: <span class="tex">A = \tfrac12,\ B = -1,\ C = \tfrac12</span>, so</p>
+    <div class="tex-block">y(t) = \tfrac12 - e^{-t} + \tfrac12 e^{-2t}</div>
+    <p>Sanity check with the final-value theorem: <span class="tex">sY(s)|_{s\to0} = \tfrac{1}{2}</span>. Matches.</p>
+  </div>
+
+  <div class="lab" data-lab="signals">
+    <div class="lab-head"><span class="lab-kicker">Lab 2.1</span><h3>Signal ↔ transform</h3><p>Pick a time signal, move its parameter, and see the transform's poles and zeros move with it.</p></div>
+  </div>
+
+  <div class="lab" data-lab="pole-drag">
+    <div class="lab-head"><span class="lab-kicker">Lab 2.2</span><h3>Drag the poles</h3><p>Grab a pole on the s-plane and move it. The impulse and step responses of a system with those poles (DC gain normalized to 1) update as you drag. Add a zero to see how it re-weights the modes without adding any.</p></div>
+  </div>
+  <div class="quiz-block" data-quiz="laplace"><h3>Check yourself</h3></div>
+</section>
+
+<!-- ============================================================ 3 TRANSFER FUNCTIONS -->
+<section class="module" id="m-transfer" data-module="transfer" data-title="Transfer functions &amp; block algebra" data-short="Blocks">
+  <div class="eyebrow">Module 3</div>
+  <h1>Transfer functions and block algebra</h1>
+  <p class="lede">Blocks compose with three rules. The one that matters is feedback, because it moves the poles, and the poles are the behavior.</p>
+  <div class="prose">
+    <h2>Anatomy of a transfer function</h2>
+    <div class="tex-block">G(s) = \frac{N(s)}{D(s)} = K\,\frac{(s - z_1)(s - z_2)\cdots}{(s - p_1)(s - p_2)\cdots}</div>
+    <div class="key-terms">
+      <div><b>Poles</b> Roots of D(s). They are the modes, and they decide stability.</div>
+      <div><b>Zeros</b> Roots of N(s). They shape how modes mix; a RHP zero limits achievable bandwidth.</div>
+      <div><b>DC gain</b> G(0) = N(0)/D(0). The steady-state output per unit constant input.</div>
+      <div><b>Relative degree</b> deg D − deg N. Zero means direct feedthrough; physical plants are strictly proper.</div>
+    </div>
+    <h2>The three composition rules</h2>
+    <div class="tex-block">\text{series: } G_1G_2\qquad \text{parallel: } G_1 + G_2\qquad \text{negative feedback: } \frac{G}{1 + GH}</div>
+    <p>With <span class="tex">L = GH</span> the loop gain, the closed-loop denominator is <span class="tex">1 + L(s)</span>. Its roots are the closed-loop poles, and <span class="tex">1 + L(s) = 0</span> is the <em>characteristic equation</em>. Everything about closed-loop stability lives in that one equation, which is why the frequency-response and root-locus modules both study <span class="tex">L</span> rather than <span class="tex">G</span>.</p>
+    <h2>Steady-state error and system type</h2>
+    <p>For unity feedback with <span class="tex">L(s)</span> containing <span class="tex">N</span> pure integrators (type <span class="tex">N</span>), the final-value theorem on <span class="tex">E(s) = R(s)/(1 + L(s))</span> gives:</p>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Input</th><th>Type 0</th><th>Type 1</th><th>Type 2</th></tr></thead>
+        <tbody>
+          <tr><td>Step</td><td><span class="tex">\dfrac{1}{1 + K_p}</span>, <span class="tex">K_p = L(0)</span></td><td>0</td><td>0</td></tr>
+          <tr><td>Ramp</td><td>∞</td><td><span class="tex">\dfrac{1}{K_v}</span>, <span class="tex">K_v = \lim sL(s)</span></td><td>0</td></tr>
+          <tr><td>Parabola</td><td>∞</td><td>∞</td><td><span class="tex">\dfrac{1}{K_a}</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>This is the algebraic reason a P controller on a first-order plant leaves an offset and an integrator removes it: the integrator raises the type by one.</p>
+  </div>
+
+  <div class="lab" data-lab="block-algebra">
+    <div class="lab-head"><span class="lab-kicker">Lab 3.1</span><h3>Close the loop by hand</h3><p>Enter G(s) and H(s) as coefficient lists (highest power first). The closed-loop transfer function, its poles, DC gain and the step response follow. Try G = 1/(s+1), H = 1 with a gain in front and watch the pole move.</p></div>
+  </div>
+
+  <div class="prose">
+    <h2>Routh–Hurwitz: stability without computing roots</h2>
+    <p>For a characteristic polynomial <span class="tex">a_0 s^n + a_1 s^{n-1} + \dots + a_n</span>, all coefficients positive is necessary but not sufficient. The Routh table settles it: build two rows from alternating coefficients, fill each next row from the two above by</p>
+    <div class="tex-block">b_i = \frac{a_1 a_{2i+2} - a_0 a_{2i+3}}{a_1}\ \ \text{(and so on down)}</div>
+    <p>and count sign changes in the first column. That count is the number of right-half-plane roots. Its practical use is finding the range of a gain <span class="tex">K</span> that keeps the loop stable, because <span class="tex">K</span> appears symbolically in the table. Two special cases show up: a zero in the first column (replace it by a small ε and look at the signs as ε → 0) and an entire zero row (the polynomial has roots symmetric about the origin; differentiate the auxiliary polynomial from the row above).</p>
+  </div>
+
+  <div class="lab" data-lab="routh">
+    <div class="lab-head"><span class="lab-kicker">Lab 3.2</span><h3>Routh table with a gain sweep</h3><p>The characteristic polynomial is D(s) + K·N(s). Sweep K to find the stability boundary; the numerically computed roots on the right confirm the table. Default: the classic s(s+1)(s+2) + K, which loses stability at K = 6.</p></div>
+  </div>
+  <div class="quiz-block" data-quiz="transfer"><h3>Check yourself</h3></div>
+</section>
+
+<!-- ============================================================ 4 FEEDBACK -->
+<section class="module" id="m-feedback" data-module="feedback" data-title="Open loop vs feedback" data-short="Feedback">
+  <div class="eyebrow">Module 4</div>
+  <h1>Open loop versus feedback</h1>
+  <p class="lede">Open loop trusts the model. Feedback trusts the measurement. The whole discipline is about what each one costs.</p>
+  <div class="prose">
+    <h2>Open loop is an inverse model</h2>
+    <p>If you know the plant has gain <span class="tex">K</span>, the open-loop controller is <span class="tex">u = r/K</span>. With a perfect model and no disturbance it is flawless, needs no sensor, and cannot go unstable. It also cannot notice that the plant gain drifted 20 % with temperature, that a load was added, or that the actuator is stuck. And it cannot stabilize an unstable plant at all.</p>
+    <h2>Feedback acts on the error, and that changes the transfer functions</h2>
+    <p>With unity feedback, loop gain <span class="tex">L = CG</span>, the three responses that matter are</p>
+    <div class="tex-block">T = \frac{L}{1+L}\ \ (r \to y),\qquad S = \frac{1}{1+L}\ \ (d_{out} \to y,\ \text{and } \frac{dT/T}{dG/G}),\qquad \frac{G}{1+L}\ \ (d_{in} \to y)</div>
+    <p><span class="tex">S</span> is the sensitivity function. It says by how much an output disturbance gets through and, equally, by how much a relative change in the plant shows up as a relative change in the closed loop. Where <span class="tex">|L| \gg 1</span>, <span class="tex">|S| \ll 1</span>: the loop does not care what the plant does exactly. That is the entire benefit of feedback, in one function.</p>
+    <div class="callout"><div class="t">The constraint you cannot tune away</div><span class="tex">S + T = 1</span> at every frequency. Where you reject disturbances (<span class="tex">S \approx 0</span>) you pass measurement noise (<span class="tex">T \approx 1</span>). Loop design is deciding where the crossover between the two happens, and that decision is the bandwidth.</div>
+    <h2>What feedback costs</h2>
+    <ul>
+      <li><strong>A sensor</strong>, and its noise enters the loop through <span class="tex">T</span>.</li>
+      <li><strong>Stability risk.</strong> High gain makes <span class="tex">|S|</span> small at low frequency but, past the point where the phase lag reaches −180°, high gain makes the loop oscillate. Modules 7 and 8 quantify this.</li>
+      <li><strong>Reduced effective gain.</strong> The closed loop's DC gain is <span class="tex">L(0)/(1+L(0))</span>, not 1, unless there is an integrator: the offset you will see with P control.</li>
+    </ul>
+  </div>
+
+  <div class="lab" data-lab="ol-vs-cl">
+    <div class="lab-head"><span class="lab-kicker">Lab 4.1</span><h3>Same plant, two strategies</h3><p>The open-loop controller uses the nominal gain. The closed loop uses P or PI. Drift the real plant gain, add a load disturbance at t = 25 s and sensor noise, then compare. The sensitivity plot shows |S| for the closed loop against the open loop's flat 1.</p></div>
+  </div>
+  <div class="quiz-block" data-quiz="feedback"><h3>Check yourself</h3></div>
+</section>
+
+<!-- ============================================================ 5 PID -->
+<section class="module" id="m-pid" data-module="pid" data-title="PID control" data-short="PID">
+  <div class="eyebrow">Module 5</div>
+  <h1>PID control</h1>
+  <p class="lede">Three terms, three jobs: the present, the past, and a guess at the future. Most of what goes wrong in practice is not the terms but the details around them.</p>
+  <div class="prose">
+    <h2>The law, in the two forms you will meet</h2>
+    <div class="tex-block">u(t) = K_p\,e(t) + K_i\!\int_0^t e\,d\tau + K_d\,\frac{de}{dt}\qquad\text{(parallel)}</div>
+    <div class="tex-block">u(t) = K_p\left(e(t) + \frac{1}{T_i}\!\int_0^t e\,d\tau + T_d\,\frac{de}{dt}\right)\qquad\text{(standard / ISA)},\qquad K_i = \frac{K_p}{T_i},\ \ K_d = K_p T_d</div>
+    <p>PLC vendors use either, and some use the “series” form on top. Before typing gains from a tuning rule, check which form the target uses. The tuning module gives both.</p>
+    <figure>
+      <svg viewBox="0 0 520 190" role="img" aria-label="PID block diagram: error feeds proportional and integral paths; the derivative acts on the measured output; the three add into the control signal, which passes through a saturation block.">
+        <defs><marker id="arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+        <g fill="none" stroke="currentColor" stroke-width="1.5">
+          <line x1="10" y1="70" x2="50" y2="70" marker-end="url(#arr3)"/>
+          <circle cx="64" cy="70" r="12"/>
+          <line x1="76" y1="70" x2="110" y2="70"/>
+          <circle cx="110" cy="70" r="3" fill="currentColor"/>
+          <line x1="110" y1="40" x2="110" y2="100"/>
+          <line x1="110" y1="40" x2="170" y2="40" marker-end="url(#arr3)"/>
+          <line x1="110" y1="100" x2="170" y2="100" marker-end="url(#arr3)"/>
+          <rect x="172" y="24" width="90" height="32" rx="4"/>
+          <rect x="172" y="84" width="90" height="32" rx="4"/>
+          <rect x="172" y="144" width="90" height="32" rx="4"/>
+          <line x1="262" y1="40" x2="330" y2="72" marker-end="url(#arr3)"/>
+          <line x1="262" y1="100" x2="330" y2="80" marker-end="url(#arr3)"/>
+          <line x1="262" y1="160" x2="330" y2="88" marker-end="url(#arr3)"/>
+          <circle cx="342" cy="80" r="12"/>
+          <line x1="354" y1="80" x2="392" y2="80" marker-end="url(#arr3)"/>
+          <rect x="394" y="62" width="50" height="36" rx="4"/>
+          <polyline points="402,90 412,90 426,70 436,70" stroke-width="1.2"/>
+          <line x1="444" y1="80" x2="505" y2="80" marker-end="url(#arr3)"/>
+          <line x1="64" y1="140" x2="64" y2="82" marker-end="url(#arr3)"/>
+          <line x1="64" y1="140" x2="10" y2="140"/>
+        </g>
+        <g fill="none" stroke="var(--accent)" stroke-width="2">
+          <line x1="64" y1="140" x2="140" y2="140"/>
+          <line x1="140" y1="140" x2="140" y2="160"/>
+          <line x1="140" y1="160" x2="170" y2="160" marker-end="url(#arr3)"/>
+        </g>
+        <g fill="currentColor" font-size="12" font-family="IBM Plex Sans, system-ui, sans-serif">
+          <text x="14" y="62">r</text><text x="58" y="74" font-size="13">Σ</text><text x="48" y="92" font-size="11">−</text>
+          <text x="84" y="62">e</text>
+          <text x="217" y="44" text-anchor="middle">K_p · e</text>
+          <text x="217" y="104" text-anchor="middle">K_i ∫ e dt</text>
+          <text x="217" y="164" text-anchor="middle">−K_d · dy/dt</text>
+          <text x="336" y="84" font-size="13">Σ</text>
+          <text x="419" y="112" text-anchor="middle" font-size="11">limits</text>
+          <text x="470" y="72">u</text>
+          <text x="14" y="134">y</text>
+          <text x="95" y="135" font-size="11" fill="var(--accent)">derivative on measurement</text>
+        </g>
+      </svg>
+      <figcaption>A practical PID: the derivative acts on the measurement so a setpoint step does not produce a spike, and the output limits are inside the controller so the integrator can be told about them.</figcaption>
+    </figure>
+    <h2>What each term buys and what it costs</h2>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Term</th><th>Does</th><th>Side effect</th></tr></thead>
+        <tbody>
+          <tr><td>P</td><td>Corrects in proportion to the error now. More gain: faster, less offset.</td><td>Leaves an offset on plants without an integrator. Too much: oscillation.</td></tr>
+          <tr><td>I</td><td>Keeps pushing while any error remains: zero steady-state error to a step.</td><td>Adds 90° of phase lag, so it eats stability margin. Winds up when the actuator saturates.</td></tr>
+          <tr><td>D</td><td>Reacts to the rate of change: damping, and permission to raise Kp.</td><td>Amplifies measurement noise. Kicks on setpoint steps if applied to the error.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h2>The details that decide whether it works on real hardware</h2>
+    <ul>
+      <li><strong>Derivative filter.</strong> Pure derivative has unbounded gain at high frequency. Use <span class="tex">K_d s/(T_f s + 1)</span> with <span class="tex">T_f = T_d/N</span>, <span class="tex">N \approx 8\text{–}20</span>.</li>
+      <li><strong>Derivative on measurement</strong> (not on error). Same behavior for disturbances, no kick on setpoint changes.</li>
+      <li><strong>Anti-windup.</strong> When the output hits a limit, stop integrating in the saturating direction (clamping) or bleed the integrator back with <span class="tex">(u_{sat} - v)/T_t</span> (back-calculation). Without it, the integrator keeps growing and the loop overshoots badly once it comes out of saturation.</li>
+      <li><strong>Setpoint weighting.</strong> <span class="tex">P = K_p(b\,r - y)</span> with <span class="tex">b \in [0,1]</span> softens the setpoint response without touching disturbance rejection.</li>
+      <li><strong>Bumpless transfer.</strong> On manual → auto, initialize the integrator so the first automatic output equals the last manual one.</li>
+    </ul>
+    <p>As a transfer function, the practical PID is <span class="tex">C(s) = K_p + \dfrac{K_i}{s} + \dfrac{K_d s}{T_f s + 1}</span>: an integrator, a zero pair that adds phase lead around crossover, and a roll-off pole from the filter.</p>
+  </div>
+
+  <div class="lab" data-lab="pid-sandbox">
+    <div class="lab-head"><span class="lab-kicker">Lab 5.1</span><h3>PID sandbox</h3><p>Setpoint step at t = 0, load disturbance at t = 30 s. Start with P only and raise Kp until it rings; add Ki and watch the offset vanish and the overshoot grow; add Kd to damp it. Then turn on the actuator limits and compare anti-windup strategies. Show the term contributions to see who is doing the work.</p></div>
+  </div>
+  <div class="quiz-block" data-quiz="pid"><h3>Check yourself</h3></div>
+</section>
+
+<!-- ============================================================ 6 TUNING -->
+<section class="module" id="m-tuning" data-module="tuning" data-title="PID tuning" data-short="Tuning">
+  <div class="eyebrow">Module 6</div>
+  <h1>PID tuning</h1>
+  <p class="lede">Tuning rules are recipes that map a few plant numbers to three gains. Knowing which numbers a rule trusts tells you when it will fail.</p>
+  <div class="prose">
+    <h2>Manual tuning, the honest version</h2>
+    <ol>
+      <li>Integral and derivative off. Raise <span class="tex">K_p</span> until the response to a small setpoint step just starts to oscillate, then back off to about half.</li>
+      <li>Add integral action, starting with <span class="tex">T_i</span> around the plant's time constant, and shorten it until the offset disappears at acceptable overshoot.</li>
+      <li>Add derivative only if you need more damping or more speed and the measurement is clean. <span class="tex">T_d \approx T_i/4</span> is the classical starting ratio.</li>
+    </ol>
+    <p>It works, it takes an afternoon, and it tells you nothing about robustness. Model-based rules make the same decisions in seconds and let you reason about the trade-off.</p>
+    <h2>Step 1: a model from a step test</h2>
+    <p>With the controller in manual, step the output by <span class="tex">\Delta u</span> and record until the process settles. The two-point method reads the times to 28.3 % and 63.2 % of the total change:</p>
+    <div class="tex-block">\tau = 1.5\,(t_{63} - t_{28}),\qquad L = t_{63} - \tau,\qquad K = \frac{\Delta y}{\Delta u}</div>
+    <p>The ratio <span class="tex">L/\tau</span> is the difficulty number. Below 0.1 dead time barely matters; between 0.1 and 1 any decent rule works; above 1 the loop is dead-time dominated and no gain will make it fast.</p>
+    <h2>Step 2: the rule families</h2>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Family</th><th>Needs</th><th>Character</th></tr></thead>
+        <tbody>
+          <tr><td>Ziegler–Nichols open loop, Cohen–Coon</td><td>K, τ, L</td><td>Designed for quarter-amplitude decay: fast, 25 %+ overshoot, poor robustness. Good disturbance rejection.</td></tr>
+          <tr><td>IMC / lambda, SIMC (Skogestad)</td><td>K, τ, L and a speed knob λ</td><td>One tunable: the desired closed-loop time constant. λ = L is a good default; larger λ is slower and more robust.</td></tr>
+          <tr><td>Ziegler–Nichols ultimate, Tyreus–Luyben</td><td>Ku, Pu</td><td>From the ultimate gain and period. ZN is aggressive; TL is a conservative correction.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Rule</th><th>Kp</th><th>Ti</th><th>Td</th></tr></thead>
+        <tbody>
+          <tr><td>ZN open loop PID</td><td><span class="tex">1.2\,\tau/(KL)</span></td><td><span class="tex">2L</span></td><td><span class="tex">0.5L</span></td></tr>
+          <tr><td>IMC PID</td><td><span class="tex">\dfrac{\tau + L/2}{K(\lambda + L/2)}</span></td><td><span class="tex">\tau + L/2</span></td><td><span class="tex">\dfrac{\tau L}{2\tau + L}</span></td></tr>
+          <tr><td>SIMC PI</td><td><span class="tex">\dfrac{\tau}{K(\lambda + L)}</span></td><td><span class="tex">\min(\tau,\ 4(\lambda + L))</span></td><td>0</td></tr>
+          <tr><td>ZN ultimate PID</td><td><span class="tex">0.6\,K_u</span></td><td><span class="tex">P_u/2</span></td><td><span class="tex">P_u/8</span></td></tr>
+          <tr><td>Tyreus–Luyben PID</td><td><span class="tex">0.45\,K_u</span></td><td><span class="tex">2.2\,P_u</span></td><td><span class="tex">P_u/6.3</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h2>Finding Ku and Pu safely: the relay experiment</h2>
+    <p>Raising the gain until the loop oscillates is how the ultimate gain was originally found, and it is a bad idea on a real plant. Åström and Hägglund's relay method replaces the controller with a relay of amplitude <span class="tex">d</span>: the loop settles into a limit cycle at the ultimate period, with amplitude <span class="tex">a</span>, and by describing-function analysis</p>
+    <div class="tex-block">K_u \approx \frac{4d}{\pi a},\qquad P_u = \text{the limit-cycle period}</div>
+    <p>The oscillation amplitude is controlled by <span class="tex">d</span>, which is what makes it safe. This is what most auto-tune buttons on commercial controllers do.</p>
+  </div>
+
+  <div class="lab" data-lab="tuning-bench">
+    <div class="lab-head"><span class="lab-kicker">Lab 6.1</span><h3>Tuning bench</h3><p>Three stages on one plant. Identify it from a step test, apply the rules and compare their closed-loop responses on the true plant (setpoint step, then a load disturbance at t = 60 s), or run the relay experiment for the ultimate-gain rules. The “three equal lags” plant is a good test: it is not FOPDT, and the rules only see the fit.</p></div>
+  </div>
+  <div class="quiz-block" data-quiz="tuning"><h3>Check yourself</h3></div>
+</section>
+
+<!-- ============================================================ 7 FREQUENCY -->
+<section class="module" id="m-frequency" data-module="frequency" data-title="Frequency response &amp; margins" data-short="Bode">
+  <div class="eyebrow">Module 7</div>
+  <h1>Frequency response and stability margins</h1>
+  <p class="lede">Feed a sinusoid into a stable linear system and a sinusoid comes out, scaled and shifted. Plot the scaling and the shift against frequency and you can read stability, speed and robustness off the open loop, before closing it.</p>
+  <div class="prose">
+    <h2>Reading a Bode plot</h2>
+    <p><span class="tex">G(j\omega)</span> is the transfer function evaluated on the imaginary axis. Magnitude in decibels (<span class="tex">20\log_{10}|G|</span>) and phase in degrees, both against <span class="tex">\log\omega</span>. The asymptotes are additive, which is why the log scale is used:</p>
+    <ul>
+      <li>Integrator <span class="tex">1/s</span>: −20 dB/decade everywhere, −90° everywhere.</li>
+      <li>First-order pole <span class="tex">1/(\tau s+1)</span>: flat until <span class="tex">\omega = 1/\tau</span>, then −20 dB/decade; phase from 0° to −90°, −45° at the break.</li>
+      <li>A zero does the opposite: +20 dB/decade and +90°.</li>
+      <li>Dead time <span class="tex">e^{-Ls}</span>: magnitude exactly 1, phase <span class="tex">-\omega L</span> radians, growing without bound. This is what eventually forces every real loop to −180°.</li>
+    </ul>
+    <h2>Stability from the open loop: gain and phase margin</h2>
+    <p>The closed loop has poles where <span class="tex">L(s) = -1</span>: magnitude 1 and phase −180° at the same frequency. The margins measure how far <span class="tex">L(j\omega)</span> stays from that point:</p>
+    <div class="tex-block">\omega_{gc}:\ |L| = 1,\quad PM = 180^\circ + \angle L(j\omega_{gc})\qquad\qquad \omega_{pc}:\ \angle L = -180^\circ,\quad GM = \frac{1}{|L(j\omega_{pc})|}</div>
+    <p>Rules of thumb that have survived: phase margin 45–60°, gain margin 6–10 dB (a factor 2 to 3). For a loop that behaves like a second-order system, <span class="tex">PM \approx 100\,\zeta</span> for <span class="tex">\zeta \lesssim 0.6</span>, so 50° of phase margin is roughly <span class="tex">\zeta = 0.5</span> and 16 % overshoot. The gain crossover frequency is the closed-loop bandwidth to a first approximation: raise it and the response speeds up, noise gets in, and margins shrink.</p>
+    <h2>Nyquist and the sensitivity peak</h2>
+    <p>Plot <span class="tex">L(j\omega)</span> in the complex plane and the margins become distances from the −1 point along the real axis and along the unit circle. A single number captures both: the closest approach of the locus to −1 is <span class="tex">1/M_s</span>, where <span class="tex">M_s = \max_\omega |S(j\omega)|</span>. <span class="tex">M_s</span> between 1.3 and 2 is the usual robustness band; 2 corresponds to about 6 dB of gain margin and 29° of phase margin as guaranteed minima.</p>
+    <div class="callout"><div class="t">Why dead time caps the bandwidth</div>At the gain crossover the delay alone eats <span class="tex">\omega_{gc}L</span> radians of phase. With everything else perfect and 60° of margin, <span class="tex">\omega_{gc} L \le \pi/3 \Rightarrow \omega_{gc} \lesssim 1/L</span>. No tuning rule beats that; the ones that try are the ones that oscillate.</div>
+  </div>
+
+  <div class="lab" data-lab="bode">
+    <div class="lab-head"><span class="lab-kicker">Lab 7.1</span><h3>Loop shaping with a PID</h3><p>The Bode plot of L = C·G with the margins marked, the Nyquist locus with the −1 point, and the closed-loop step response simulated alongside. Raise Kp and watch the gain crossover slide right and the phase margin fall; add dead time and watch the phase drop away.</p></div>
+  </div>
+  <div class="quiz-block" data-quiz="frequency"><h3>Check yourself</h3></div>
+</section>
+
+<!-- ============================================================ 8 ROOT LOCUS -->
+<section class="module" id="m-rootlocus" data-module="rootlocus" data-title="Root locus" data-short="Root locus">
+  <div class="eyebrow">Module 8</div>
+  <h1>Root locus</h1>
+  <p class="lede">Where do the closed-loop poles go as you turn the gain up? The root locus draws the whole answer at once.</p>
+  <div class="prose">
+    <p>For the characteristic equation <span class="tex">1 + K\,G(s) = 0</span>, the locus is the set of closed-loop poles for <span class="tex">K</span> from 0 to ∞. A few rules let you sketch it without a computer, and they are the same rules that explain what you will see in the lab:</p>
+    <ul>
+      <li>Branches <strong>start at the open-loop poles</strong> (<span class="tex">K = 0</span>) and <strong>end at the open-loop zeros</strong>, or go to infinity along asymptotes when there are more poles than zeros.</li>
+      <li>On the real axis, a point belongs to the locus if there is an <strong>odd number</strong> of real poles and zeros to its right.</li>
+      <li>Where two real branches meet they <strong>break away</strong> into a complex pair: from there on the response oscillates.</li>
+      <li>Where a branch <strong>crosses the imaginary axis</strong>, the loop becomes unstable. The gain at that crossing is the ultimate gain <span class="tex">K_u</span> and the crossing frequency gives <span class="tex">P_u = 2\pi/\omega</span>: the same numbers the relay experiment estimates.</li>
+      <li>Lines of constant <span class="tex">\zeta</span> are rays from the origin (<span class="tex">\zeta = \cos\theta</span> from the negative real axis). Choosing the gain where the dominant branch crosses the <span class="tex">\zeta = 0.5</span> ray is a legitimate design method.</li>
+    </ul>
+    <p>The locus makes one thing obvious that Bode hides: adding a zero pulls branches toward it, which is what derivative action does (the PD controller adds a zero), and adding a pole at the origin pushes them toward the right, which is what integral action costs.</p>
+  </div>
+
+  <div class="lab" data-lab="rlocus">
+    <div class="lab-head"><span class="lab-kicker">Lab 8.1</span><h3>Turn the gain, watch the poles</h3><p>Proportional gain on the selected plant. The branches are drawn for K from 0.01 to the top of the slider; the filled dots are the closed-loop poles at the current K, and the step response beside them is simulated for that K. Find where the branches cross into the right half-plane.</p></div>
+  </div>
+  <div class="quiz-block" data-quiz="rootlocus"><h3>Check yourself</h3></div>
+</section>
+
+<!-- ============================================================ 9 DIGITAL -->
+<section class="module" id="m-digital" data-module="digital" data-title="Digital implementation" data-short="Digital">
+  <div class="eyebrow">Module 9</div>
+  <h1>Digital implementation</h1>
+  <p class="lede">The controller runs as code, once per sample. Sampling adds delay, discretization changes the integrator, and the code has to handle limits, modes and noise. This is the module that ships.</p>
+  <div class="prose">
+    <figure>
+      <svg viewBox="0 0 520 110" role="img" aria-label="A sampled control loop: sensor to ADC, PID algorithm running every Ts, DAC with zero-order hold to the actuator and plant, output measured back by the sensor.">
+        <defs><marker id="arr4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+        <g fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="10" y="30" width="60" height="36" rx="4"/><line x1="70" y1="48" x2="100" y2="48" marker-end="url(#arr4)"/>
+          <rect x="102" y="24" width="120" height="48" rx="4"/><line x1="222" y1="48" x2="252" y2="48" marker-end="url(#arr4)"/>
+          <rect x="254" y="30" width="76" height="36" rx="4"/><line x1="330" y1="48" x2="360" y2="48" marker-end="url(#arr4)"/>
+          <rect x="362" y="30" width="70" height="36" rx="4"/><line x1="432" y1="48" x2="470" y2="48" marker-end="url(#arr4)"/>
+          <circle cx="470" cy="48" r="3" fill="currentColor"/>
+          <line x1="470" y1="48" x2="470" y2="92"/><line x1="470" y1="92" x2="40" y2="92"/><line x1="40" y1="92" x2="40" y2="68" marker-end="url(#arr4)"/>
+          <polyline points="268,60 276,60 276,50 286,50 286,42 298,42 298,54 310,54" stroke-width="1.2"/>
+        </g>
+        <g fill="currentColor" font-size="12" font-family="IBM Plex Sans, system-ui, sans-serif">
+          <text x="40" y="52" text-anchor="middle">ADC</text>
+          <text x="162" y="44" text-anchor="middle" font-weight="600">PID code</text>
+          <text x="162" y="62" text-anchor="middle" font-size="11">every Ts</text>
+          <text x="292" y="80" text-anchor="middle" font-size="11">DAC + hold</text>
+          <text x="397" y="52" text-anchor="middle">Plant</text>
+          <text x="484" y="42">y</text>
+          <text x="250" y="106" text-anchor="middle" font-size="11">sensor sampled at Ts</text>
+        </g>
+      </svg>
+      <figcaption>The hold keeps the output constant between samples. Its average delay is Ts/2, which is phase lag the continuous design never saw.</figcaption>
+    </figure>
+    <h2>Choosing the sample time</h2>
+    <p>Fast enough that the hold delay is negligible against the loop's phase budget, slow enough not to waste the CPU and, more importantly, not to turn the integral gain per step into round-off noise. Working rules: 10 to 30 samples per closed-loop rise time, or <span class="tex">T_s \le 0.1\,\tau_{dominant}</span>, or <span class="tex">\omega_s = 2\pi/T_s \ge 20\,\omega_{gc}</span>. They usually agree. The lab shows what happens when they are violated.</p>
+    <h2>Discretizing the terms</h2>
+    <div class="tex-block">I_k = I_{k-1} + K_i T_s\, e_k\ \ \text{(backward Euler)}\qquad I_k = I_{k-1} + K_i T_s\,\frac{e_k + e_{k-1}}{2}\ \ \text{(Tustin)}</div>
+    <div class="tex-block">D_k = \frac{T_f}{T_f + T_s}\,D_{k-1} + \frac{K_d}{T_f + T_s}\,(x_k - x_{k-1}),\qquad x = -y\ \text{(derivative on measurement)}</div>
+    <p>At sensible sample rates the difference between Euler and Tustin is invisible; the derivative filter <span class="tex">T_f</span> is not optional. Two implementation habits worth keeping: compute the unsaturated output <span class="tex">v</span>, saturate to <span class="tex">u</span>, then correct the integrator (anti-windup needs both), and keep the integrator in the units of the output so mode changes can seed it (bumpless transfer).</p>
+  </div>
+
+  <div class="lab" data-lab="sampling">
+    <div class="lab-head"><span class="lab-kicker">Lab 9.1</span><h3>Sample time and noise</h3><p>A fixed PID (IMC-tuned for the selected plant) at different sample times. Slow it down until the loop degrades. Then add measurement noise and change the derivative filter to see the control signal calm down.</p></div>
+  </div>
+
+  <div class="prose"><h2>Reference implementation</h2><p>The same controller the labs run, in three languages. Parallel form, derivative on measurement with first-order filter, clamping or back-calculation anti-windup, output limits, bumpless reset. Drop it in, then tune with the rules from module 6.</p></div>
+  <div data-lab="pid-code"></div>
+  <div class="quiz-block" data-quiz="digital"><h3>Check yourself</h3></div>
+</section>
+
+<!-- ============================================================ 10 CHALLENGES -->
+<section class="module" id="m-challenges" data-module="challenges" data-title="Design challenges" data-short="Challenges">
+  <div class="eyebrow">Module 10</div>
+  <h1>Design challenges</h1>
+  <p class="lede">Five loops, each with a specification. Tune until every line goes green. The grader runs the same simulation as the labs, so the metrics are the ones you have been reading all along.</p>
+  <div class="prose"><p>Each challenge has a point beyond the numbers. If you find yourself stuck, the hint says which module holds the idea. Badges are stored in this browser.</p></div>
+  <div data-lab="challenges"></div>
+</section>
+
+</main>
+</div>
+
+<script src="js/numerics.js"></script>
+<script src="js/sim.js"></script>
+<script src="js/plot.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/labs-basics.js"></script>
+<script src="js/labs-pid.js"></script>
+<script src="js/labs-freq.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
